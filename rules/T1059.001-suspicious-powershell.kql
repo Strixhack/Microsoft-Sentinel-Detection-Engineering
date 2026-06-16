@@ -1,1 +1,17 @@
-
+﻿// Rule: Suspicious PowerShell Execution
+// MITRE: T1059.001 - Command and Scripting Interpreter: PowerShell
+// Severity: Medium | Tactic: Execution
+// Data source: DeviceProcessEvents (MDE)
+DeviceProcessEvents
+| where TimeGenerated > ago(1h)
+| where FileName =~ "powershell.exe" or FileName =~ "pwsh.exe"
+| where ProcessCommandLine has_any (
+    "-EncodedCommand", "-enc ", "-NoProfile",
+    "-NonInteractive", "-WindowStyle Hidden",
+    "IEX", "Invoke-Expression", "DownloadString",
+    "WebClient", "bypass"
+)
+| where InitiatingProcessFileName !~ "sensecm.exe"
+| where InitiatingProcessFileName !~ "MsSense.exe"
+| project TimeGenerated, DeviceName, FileName,
+          ProcessCommandLine, InitiatingProcessFileName, AccountName

@@ -1,0 +1,11 @@
+﻿// Rule: Suspicious Outbound Network Connection
+// MITRE: T1071.001 - Application Layer Protocol: Web Protocols
+// Severity: Medium | Tactic: Command and Control
+DeviceNetworkEvents
+| where TimeGenerated > ago(1h)
+| where ActionType == "ConnectionSuccess"
+| where RemotePort in (4444, 1337, 8888, 9999, 8080, 1234)
+    or (RemoteUrl has_any ("pastebin.com", "raw.githubusercontent.com", "ghostbin.com", "hastebin.com", "ngrok.io"))
+| where InitiatingProcessFileName !~ "MsMpEng.exe"
+| where InitiatingProcessFileName !~ "MsSense.exe"
+| project TimeGenerated, DeviceName, RemoteIP, RemotePort, RemoteUrl, InitiatingProcessFileName, InitiatingProcessAccountName

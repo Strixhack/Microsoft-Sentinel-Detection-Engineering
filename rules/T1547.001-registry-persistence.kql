@@ -1,0 +1,14 @@
+﻿// Rule: Persistence via Registry Run Key
+// MITRE: T1547.001 - Boot or Logon Autostart: Registry Run Keys
+// Severity: High | Tactic: Persistence
+DeviceRegistryEvents
+| where TimeGenerated > ago(1h)
+| where ActionType in ("RegistryValueSet", "RegistryKeyCreated")
+| where RegistryKey has_any (
+    "\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+    "\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce",
+    "\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Run"
+)
+| where InitiatingProcessFileName !~ "svchost.exe"
+| where InitiatingProcessFileName !~ "MsMpEng.exe"
+| project TimeGenerated, DeviceName, RegistryKey, RegistryValueName, RegistryValueData, InitiatingProcessFileName, InitiatingProcessAccountName

@@ -1,0 +1,10 @@
+﻿// Rule: Suspicious User Enumeration
+// MITRE: T1087.001 - Account Discovery: Local Account
+// Severity: Medium | Tactic: Discovery
+DeviceProcessEvents
+| where TimeGenerated > ago(1h)
+| where FileName in~ ("net.exe", "net1.exe", "whoami.exe", "query.exe")
+| where ProcessCommandLine has_any ("user", "localgroup", "group", "/all", "session")
+| where InitiatingProcessFileName !~ "services.exe"
+| where AccountName !~ "SYSTEM"
+| project TimeGenerated, DeviceName, FileName, ProcessCommandLine, InitiatingProcessFileName, AccountName

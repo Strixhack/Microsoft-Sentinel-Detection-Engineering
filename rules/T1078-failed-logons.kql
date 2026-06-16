@@ -1,0 +1,12 @@
+﻿// Rule: Multiple Failed Logon Attempts
+// MITRE: T1078 - Valid Accounts
+// Severity: High | Tactic: Credential Access
+DeviceLogonEvents
+| where TimeGenerated > ago(1h)
+| where ActionType == "LogonFailed"
+| where LogonType in ("Interactive", "RemoteInteractive", "Network")
+| where AccountName !~ "SYSTEM"
+| where AccountName != ""
+| summarize FailedAttempts = count(), FirstAttempt = min(TimeGenerated), LastAttempt = max(TimeGenerated) by DeviceName, AccountName, RemoteIP
+| where FailedAttempts >= 3
+| project FirstAttempt, LastAttempt, DeviceName, AccountName, RemoteIP, FailedAttempts
